@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leitor de Código de Barras</title>
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+</head>
+<body style="font-family: Arial; text-align: center; padding: 20px;">
+  <h2>📷 Aponte a câmera para o código de barras</h2>
+  <video id="video" width="300" height="200" style="border: 1px solid black;"></video>
+  <p id="mensagem"></p>
+
+  <script>
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    const urlParams = new URLSearchParams(window.location.search);
+    const idPedido = urlParams.get('idPedido');
+
+    codeReader.getVideoInputDevices().then(videoInputDevices => {
+      codeReader.decodeFromVideoDevice(videoInputDevices[0].deviceId, 'video', (result, err) => {
+        if (result) {
+          document.getElementById('mensagem').innerText = 'Código lido: ' + result.text;
+
+          // Envia o código para o backend
+          fetch('/validar-volume', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ idPedido, codigoBarras: result.text })
+          })
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('mensagem').innerText = data.mensagem;
+            codeReader.reset(); // para leitura única
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

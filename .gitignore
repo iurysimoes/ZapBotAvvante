@@ -1,0 +1,24 @@
+# Arquivos que nao ha necessidade de subir para o GitHubgit filter-repo --version
+
+# Dependências do Node.js
+node_modules/
+instantclient_21_3/
+
+# Arquivos de ambiente
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Logs e arquivos temporários
+logs/
+*.log
+.DS_Store
+Thumbs.db
+
+echo "instantclient_21_3.rar" >> .gitignore
+node_modules/
+.env
+*.rar
+*.zip
+*.exe
+.DS_Store
+
