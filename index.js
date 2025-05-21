@@ -274,7 +274,7 @@ if (userId !== '556284315872@c.us') {
 
 /*inicio iury*/
 //const scannerController = require('./Controller/scannerController'); 
-const scannerController = require('./scanner-site/scannerController');
+const scannerController = require('./Controller/scannerController');
 
 const app = express();
 app.use(express.json());
