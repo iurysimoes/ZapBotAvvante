@@ -1,3 +1,4 @@
+
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const oracledb = require('oracledb');
@@ -30,9 +31,16 @@ const client = new Client({
 client.on('qr', (qr) => {
     qrcode.generate(qr, {small: true});    
 });
-
+/* abaixo só descomentar para pegar alguns log caso apresente algum erro interno no client e nao
+   esteja aparecendo nada visualmente no terminal...
+client.on('qr', qr => console.log('QR Code recebido'));
+client.on('authenticated', () => console.log('Autenticado'));
+client.on('auth_failure', () => console.log('Falha na autenticação'));
+client.on('ready', () => console.log('Cliente está pronto'));
+client.on('disconnected', () => console.log('Cliente desconectado'));
+*/
 // Confirma que o cliente está pronto
-client.once('ready', () => {
+client.on('ready', () => {
     console.log('Cliente está pronto!');
 
     // Função para enviar mensagem a cada 5 minutos (300000 ms)
@@ -227,7 +235,10 @@ if (userId !== '556284315872@c.us') {
       switch (msg.body) {
         case '1':
         // Ajuste aqui: enviar link para a página scanner passando o pedido selecionado
-        const linkScanner = `http://SEU-IP-OU-DOMINIO:3000/scanner.html?idPedido=${global.pedidoSelecionado}`;
+        //const linkScanner = `http://SEU-IP-OU-DOMINIO:3000/scanner.html?idPedido=${global.pedidoSelecionado}`;
+        const ipLocal = '192.168.1.16'; // substitua pelo IP da sua máquina
+        const linkScanner = `http://${ipLocal}:3000/scanner.html?idPedido=${global.pedidoSelecionado}`;
+
         await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
         await chat.sendMessage(linkScanner);
         break;
@@ -257,8 +268,13 @@ if (userId !== '556284315872@c.us') {
  
 });
 
+
+// Start your client
+//client.initialize();
+
 /*inicio iury*/
-const scannerController = require('./Controller/scannerController'); 
+//const scannerController = require('./Controller/scannerController'); 
+const scannerController = require('./scanner-site/scannerController');
 
 const app = express();
 app.use(express.json());
@@ -266,11 +282,12 @@ app.use(express.static('public')); // Serve HTML e JS
 
 app.post('/validar-volume', scannerController.validarVolume);
 
-app.listen(3000, () => {
-  console.log('Servidor web rodando em http://localhost:3000');
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Servidor rodando na porta 3000!');
 });
 
-/*fim iury */
 
+/*fim iury */
+//console.log('Iniciando WhatsApp client...');
 // Start your client
 client.initialize();
