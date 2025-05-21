@@ -30,10 +30,10 @@
 
     codeReader.decodeFromVideoDevice(selectedCamera.deviceId, 'video', (result, err) => {
         if (result) {
-          console.log('Código detectado:', result.text); // <== importante!
+          alert('Código detectado:', result.text); // <== importante!
           document.getElementById('mensagem').innerText = 'Código lido: ' + result.text;
            // ✅ Log para verificar se está enviando corretamente
-          console.log('Enviando para validação:', { idPedido, codigoBarras: result.text });  
+          alert('Enviando para validação:', { idPedido, codigoBarras: result.text });  
           fetch('/validar-volume', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

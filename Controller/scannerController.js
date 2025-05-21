@@ -3,7 +3,7 @@ const dbConfig = require('../ConfigDB');
 
 async function validarVolume(req, res) {
   const { idPedido, codigoBarras } = req.body;
-  console.log(codigoBarras);
+  alert(entrou aqui);
   try {
     const connection = await oracledb.getConnection(dbConfig);
     const result = await connection.execute(
