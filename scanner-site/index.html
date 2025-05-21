@@ -17,13 +17,18 @@
     const idPedido = urlParams.get('idPedido');
 
     codeReader.getVideoInputDevices().then(videoInputDevices => {
-      // Tenta selecionar a câmera traseira
-      const backCamera = videoInputDevices.find(device => 
-        device.label.toLowerCase().includes('back') || 
-        device.label.toLowerCase().includes('trás')
-      ) || videoInputDevices[0]; // Se não encontrar, usa a primeira
+  // Filtra todas as câmeras traseiras
+  const backCameras = videoInputDevices.filter(device =>
+    device.label.toLowerCase().includes('back') || 
+    device.label.toLowerCase().includes('trás')
+  );
 
-      codeReader.decodeFromVideoDevice(backCamera.deviceId, 'video', (result, err) => {
+  // Se houver mais de uma câmera traseira, pega a última (geralmente a principal)
+  const selectedCamera = backCameras.length > 0 
+    ? backCameras[backCameras.length - 1]
+    : videoInputDevices[0]; // fallback para a primeira disponível
+
+    codeReader.decodeFromVideoDevice(selectedCamera.deviceId, 'video', (result, err) => {
         if (result) {
           document.getElementById('mensagem').innerText = 'Código lido: ' + result.text;
 
