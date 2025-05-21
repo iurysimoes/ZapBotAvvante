@@ -3,12 +3,13 @@ const dbConfig = require('../ConfigDB');
 
 async function validarVolume(req, res) {
   const { idPedido, codigoBarras } = req.body;
-
+  console.log(codigoBarras);
   try {
     const connection = await oracledb.getConnection(dbConfig);
     const result = await connection.execute(
-      `SELECT COUNT(*) AS TOTAL FROM VOLUMES 
-       WHERE PEDIDO_ID = :id AND CODIGO_BARRAS = :codigo`,
+      `select c.volc_plataforma 
+         from volume_conferencia c 
+        where c.volume_conferencia_id = :codigo`,
       [idPedido, codigoBarras]
     );
 
