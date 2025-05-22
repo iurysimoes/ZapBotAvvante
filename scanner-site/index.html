@@ -36,7 +36,7 @@
           //alert('Enviando para validação:', { idPedido, codigoBarras: result.text });  
           alert('Enviando para validação: ' + JSON.stringify({ idPedido, codigoBarras: result.text }));
 
-          fetch('https://6112-177-30-111-194.ngrok-free.app /validar-volume', {
+          fetch('https://6112-177-30-111-194.ngrok-free.app/validar-volume', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idPedido, codigoBarras: result.text })
