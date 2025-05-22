@@ -15,6 +15,7 @@
     const codeReader = new ZXing.BrowserBarcodeReader();
     const urlParams = new URLSearchParams(window.location.search);
     const idPedido = urlParams.get('idPedido');
+    const userId = urlParams.get('userId'); // <--- Pegar o userId da URL
 
     codeReader.getVideoInputDevices().then(videoInputDevices => {
   // Filtra todas as câmeras traseiras
@@ -35,11 +36,12 @@
            // ✅ Log para verificar se está enviando corretamente
           //alert('Enviando para validação:', { idPedido, codigoBarras: result.text });  
           alert('Enviando para validação: ' + JSON.stringify({ idPedido, codigoBarras: result.text }));
-
+          
           fetch('https://e2f9-177-30-111-194.ngrok-free.app/validar-volume', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idPedido, codigoBarras: result.text })
+            //body: JSON.stringify({ idPedido, codigoBarras: result.text })
+            body: JSON.stringify({ idPedido, codigoBarras: result.text, userId: userId }) // <--- Enviar o userId
           })
           .then(res => res.json())
           .then(data => {

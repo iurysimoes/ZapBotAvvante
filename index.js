@@ -26,6 +26,8 @@ const userMenuState = {}; // Armazenar o estado de qual menu o usuário está
 const client = new Client({
     authStrategy: new LocalAuth()
 });
+// Exponha o client do WhatsApp para outros módulos
+module.exports.whatsappClient = client;
 
 // Exibe o QR code no terminal
 client.on('qr', (qr) => {
@@ -239,7 +241,9 @@ if (userId !== '556284315872@c.us') {
         //const ipLocal = '192.168.1.16'; // substitua pelo IP da sua máquina
         //{global.pedidoSelecionado}
         //const linkScanner = `https://zap-bot-avvante.vercel.app/`;
-        const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}`;
+        const userId = chat.id._serialized; // Pega o ID do chat atual
+        //const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}`;
+        const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}&userId=${userId}`; // <--- AQUI DEVE ESTAR!
 
 
         await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
