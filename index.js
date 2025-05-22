@@ -238,7 +238,9 @@ if (userId !== '556284315872@c.us') {
         //const linkScanner = `http://SEU-IP-OU-DOMINIO:3000/scanner.html?idPedido=${global.pedidoSelecionado}`;
         //const ipLocal = '192.168.1.16'; // substitua pelo IP da sua máquina
         //{global.pedidoSelecionado}
-        const linkScanner = `https://zap-bot-avvante.vercel.app/`;
+        //const linkScanner = `https://zap-bot-avvante.vercel.app/`;
+        const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}`;
+
 
         await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
         await chat.sendMessage(linkScanner);
