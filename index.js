@@ -280,10 +280,15 @@ if (userId !== '556284315872@c.us') {
 const scannerController = require('./Controller/scannerController');
 
 const app = express();
+const cors = require('cors');
+
+app.use(cors());
+
 app.use(express.json());
 app.use(express.static('public')); // Serve HTML e JS
 
 app.post('/validar-volume', scannerController.validarVolume);
+
 
 app.listen(3000, '0.0.0.0', () => {
   console.log('Servidor rodando na porta 3000!');
