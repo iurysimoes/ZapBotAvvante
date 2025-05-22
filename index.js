@@ -1,13 +1,14 @@
-
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const oracledb = require('oracledb');
 const dbConfig = require("./ConfigDB");
 
 const funcoes = require('./funcoesGlobais');
-const cliente = require('./Controller/clienteController')
-const atendimento = require('./Controller/atendimentoController')
-const unem = require('./Controller/unidadeController')
+const cliente = require('./Controller/clienteController');
+const atendimento = require('./Controller/atendimentoController');
+const unem = require('./Controller/unidadeController');
+// Mover a importação do scannerController para o topo, junto com as outras imports
+const scannerController = require('./Controller/scannerController'); // Importar o scannerController
 
 const { Client, Buttons, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
@@ -18,6 +19,10 @@ const { Client, Buttons, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 var clientes = [];
 let vCount = 0;
 const userMenuState = {}; // Armazenar o estado de qual menu o usuário está
+// ATENÇÃO: global.pedidoSelecionado é uma variável global que deve ser gerenciada
+// para garantir que o pedido certo esteja associado ao usuário correto.
+// Se múltiplos usuários usam o bot simultaneamente, considere um mapeamento
+// userPedido[userId] = idPedido para maior robustez.
 
 //>> FIM ..Variaves globais do projeto devem esta declaradas aqui. Organização
 //////VERIAVEIS  GLOBAIS///////////////////////////////////////////////////////////
@@ -31,7 +36,7 @@ module.exports.whatsappClient = client;
 
 // Exibe o QR code no terminal
 client.on('qr', (qr) => {
-    qrcode.generate(qr, {small: true});    
+    qrcode.generate(qr, {small: true});
 });
 /* abaixo só descomentar para pegar alguns log caso apresente algum erro interno no client e nao
    esteja aparecendo nada visualmente no terminal...
@@ -62,7 +67,7 @@ const mostrarMenuPrincipal = (chat) => {
     //chat.sendMessage(media);
 
     const menu = `
-     🔷  *REI DA FERRAGEM*  🔷
+     🔷  *REI DA FERRAGEM* 🔷
 
      Trabalhando por Bons Negocios
 
@@ -78,228 +83,230 @@ Por favor, responda com o número da opção desejada.
     chat.sendMessage(menu);
 };
 
-    // Ouve as mensagen message_create
-    //client.on('message_create', async message => {
+// Ouve as mensagens
 client.on('message', async msg => {
- //   console.log(message.from)
-    const chat      = await msg.getChat();
-    const body      = msg.body;
-    const userId    = msg.from;  // ID do usuário que enviou a mensagem
-    const nruserId  = msg.from.split('@')[0]; // Remove a parte do domínio    
-    
-//retirar depois
-if (userId !== '556284315872@c.us') {
-//if (userId !== '556281697636@c.us') {    marcio
-//if (userId !== '556298369130@c.us') {   // murilo
+    const chat = await msg.getChat();
+    const body = msg.body;
+    const userId = msg.from;   // ID do usuário que enviou a mensagem
+    const nruserId = msg.from.split('@')[0]; // Remove a parte do domínio
 
-   return; 
-}
-    // Se o usuário ainda não tem um estado de menu, exibe o menu principal
+    // FILTRO DE USUÁRIO (APENAS PARA TESTE, RETIRAR EM PRODUÇÃO)
+    if (userId !== '556284315872@c.us') { // Mantenha ou remova conforme sua necessidade de teste
+        return;
+    }
+
+    // Se o usuário ainda não tem um estado de menu, define o estado inicial como o menu principal
     if (!userMenuState[userId]) {
-        userMenuState[userId] = 'main';  // Define o estado inicial do usuário como o menu principal
-        //mostrarMenuPrincipal(chat);
-        //return;  // Saída para evitar o processamento adicional        
+        userMenuState[userId] = 'main';
+        //mostrarMenuPrincipal(chat); // Você pode querer chamar isso aqui para iniciar a conversa
+        //return; // Se você chamar mostrarMenuPrincipal aqui e retornar, ele não processará a primeira mensagem como opção
     }
 
     const userState = userMenuState[userId];
 
-    // Lógica do menu principal
-    if (userState === 'main') {
+    // --- LÓGICA PRINCIPAL DE TRATAMENTO DE MENSAGENS ---
+
+    // 1. PRIMEIRO: Verifique se o usuário está em um estado que espera uma entrada específica (ex: código de barras)
+    if (userState === 'digitarCodigo') {
+        const codigoBarrasDigitado = msg.body;
+        // idPedidoAtual deve ser o ID do pedido que o usuário selecionou anteriormente
+        // global.pedidoSelecionado precisa estar definido neste ponto.
+        const idPedidoAtual = global.pedidoSelecionado;
+
+        console.log(`Recebido código de barras digitado: ${codigoBarrasDigitado} para Pedido: ${idPedidoAtual}`);
+
+        // Chama a função de validação de volume do scannerController (performVolumeValidation)
+        // **Certifique-se de que scannerController.performVolumeValidation está exportada em scannerController.js**
+        const validationResult = await scannerController.performVolumeValidation(codigoBarrasDigitado, idPedidoAtual);
+
+        // Envia a resposta de volta ao usuário do WhatsApp
+        await chat.sendMessage(validationResult.mensagem);
+
+        // Resetar o estado do usuário para o menu 'acaoEntrega' ou 'main' após processar
+        userMenuState[userId] = 'acaoEntrega'; // Volta para o menu de ações do pedido
+        // Reexibir o menu de ações da entrega para o usuário
+        let menuEntrega = `📦 *Pedido ${idPedidoAtual} selecionado.* O que deseja fazer?\n\n` +
+                         `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
+                         `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
+                         `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
+                         `4️⃣ - Voltar ao Início.`;
+        chat.sendMessage(menuEntrega);
+
+    }
+    // 2. SEGUNDO: Se o usuário NÃO está em um estado de espera de entrada, então ele está navegando pelos menus.
+    else if (userState === 'main') {
         if (msg.body.toLowerCase() === 'menu') {
             mostrarMenuPrincipal(chat);
-        } 
+        }
         else if (msg.body === '1') {
             chat.sendMessage('Cliente. Digite o CPF/CNPJ:');
-            userMenuState[userId] = 'clienteCPF';  // Muda o estado do usuário para o menu cienteCPF
-            //mostrarMenuCliente(chat);
-        } 
+            userMenuState[userId] = 'clienteCPF';
+        }
         else if (msg.body === '2') {
             chat.sendMessage('Transportadora. Em Desenvolvimento.');
-            return;
-            //chat.sendMessage('Transportadora. Digite o CNPJ:');
-            //userMenuState[userId] = 'transportadora';
-        } 
+            // userMenuState[userId] = 'transportadora'; // Descomente e implemente se for usar
+        }
         else if (msg.body === '3') {
             chat.sendMessage(`*Digite a mensagem para o atendimento:*`);
             userMenuState[userId] = 'atendimento';
-        } 
+        }
         else {
             chat.sendMessage('Opção inválida. Envie "menu" para ver as opções.');
         }
     }
     else if (userState === 'clienteCPF') {
-        
-        //var CpfCnpj;
-        //CpfCnpj = msg.body.replace(/[^\d]+/g, '');
         global.CpfCnpj = msg.body.replace(/[^\d]+/g, '');
 
-       if (CpfCnpj.length !== 11 && CpfCnpj.length !== 14) {
-          vCount = vCount+1; 
-          if (vCount <= 3){
-            chat.sendMessage(`CPF/CNPJ. Digitado inválido.Tentativa ${vCount} de 3. Digite o CPF/CNPJ: `);
-            userMenuState[userId] = 'clienteCPF';  // Muda o estado do usuário para o menu cienteCPF
-          }else {
-            userMenuState[userId] = 'main'; // Muda o estado do usuário para o menu
-            mostrarMenuPrincipal(chat);
-          }
-       }else{    
-          if (CpfCnpj.length === 11) {
-            if (funcoes.validarCPF(CpfCnpj)){
-                userMenuState[userId] = 'cliente'; // Muda o estado do usuário para o menu cliente
-                cliente.mostrarMenuCliente(chat);
-            }else{
-                chat.sendMessage(`CPF. Digitado inválido.`); 
-                userMenuState[userId] = 'main'; // Muda o estado do usuário para o menu
-                mostrarMenuPrincipal(chat);                
+        if (global.CpfCnpj.length !== 11 && global.CpfCnpj.length !== 14) {
+            vCount = vCount + 1;
+            if (vCount <= 3) {
+                chat.sendMessage(`CPF/CNPJ. Digitado inválido. Tentativa ${vCount} de 3. Digite o CPF/CNPJ: `);
+                userMenuState[userId] = 'clienteCPF';
+            } else {
+                chat.sendMessage('Número de tentativas excedido. Voltando ao menu principal.');
+                userMenuState[userId] = 'main';
+                mostrarMenuPrincipal(chat);
+                vCount = 0; // Resetar contador
             }
-          } 
-          if (CpfCnpj.length === 14) {
-            if (funcoes.validarCNPJ(CpfCnpj)){
-                userMenuState[userId] = 'cliente';
-                cliente.mostrarMenuCliente(chat);
-            }else{
-                chat.sendMessage(`CNPJ. Digitado inválido.`); 
-                userMenuState[userId] = 'main'; // Muda o estado do usuário para o menu
-                mostrarMenuPrincipal(chat);                
-            }            
-          }       
-       }      
+        } else {
+            if (global.CpfCnpj.length === 11) {
+                if (funcoes.validarCPF(global.CpfCnpj)) {
+                    userMenuState[userId] = 'cliente';
+                    cliente.mostrarMenuCliente(chat);
+                    vCount = 0; // Resetar contador
+                } else {
+                    chat.sendMessage(`CPF. Digitado inválido.`);
+                    userMenuState[userId] = 'main';
+                    mostrarMenuPrincipal(chat);
+                    vCount = 0; // Resetar contador
+                }
+            }
+            if (global.CpfCnpj.length === 14) {
+                if (funcoes.validarCNPJ(global.CpfCnpj)) {
+                    userMenuState[userId] = 'cliente';
+                    cliente.mostrarMenuCliente(chat);
+                    vCount = 0; // Resetar contador
+                } else {
+                    chat.sendMessage(`CNPJ. Digitado inválido.`);
+                    userMenuState[userId] = 'main';
+                    mostrarMenuPrincipal(chat);
+                    vCount = 0; // Resetar contador
+                }
+            }
+        }
     }
-    // Lógica do menu de cliente
-    else if (userState === 'cliente') {    
-        /*if (msg.body === '1') {
+    else if (userState === 'cliente') {
+        if (msg.body === '1') {
             chat.sendMessage('Aqui estão os Pedidos em Aberto: ...');
-            await funcoes.sleep(1000);  // Pausa de 1 segundos
-            cliente.mostrarCliPedido(chat);
-            await funcoes.sleep(1000);  // Pausa de 1 segundos
-            cliente.mostrarMenuCliente(chat);
-         }*/ //comentado iury
-         if (msg.body === '1') {
-          chat.sendMessage('Aqui estão os Pedidos em Aberto: ...');
-          await funcoes.sleep(1000);
-          await cliente.mostrarCliPedido(chat, userId); // envia lista numerada e salva no estado
-          userMenuState[userId] = 'escolherPedido'; // novo estado aguardando número do pedido
-         }
-
+            await funcoes.sleep(1000);
+            await cliente.mostrarCliPedido(chat, userId);
+            userMenuState[userId] = 'escolherPedido';
+        }
         else if (msg.body === '2') {
             chat.sendMessage('Aqui estão Boletos em Aberto: ...');
-            await funcoes.sleep(1000);  // Pausa de 1 segundos
+            await funcoes.sleep(1000);
             cliente.mostrarCliFinanceiro(chat);
-            await funcoes.sleep(1000);  // Pausa de 1 segundos
-            cliente.mostrarMenuCliente(chat);            
-        } 
+            await funcoes.sleep(1000);
+            cliente.mostrarMenuCliente(chat);
+        }
         else if (msg.body === '3') {
             chat.sendMessage(`*Digite a mensagem para o atendimento:*`);
             userMenuState[userId] = 'atendimento';
-
-        } 
+        }
         else if (msg.body === '4') {
-            userMenuState[userId] = 'main'; 
-            mostrarMenuPrincipal(chat);  
-        }         
+            userMenuState[userId] = 'main';
+            mostrarMenuPrincipal(chat);
+        }
         else {
             userMenuState[userId] = 'cliente';
             cliente.mostrarMenuCliente(chat);
         }
     }
     else if (userState === 'atendimento') {
-        atendimento.gravarMsgAtendimento(chat,body,userId,nruserId);
-        userMenuState[userId] = 'main'; 
-        return;
-    }/*inicio iury*/
-    else if (userState === 'escolherPedido') {
-      const escolha = parseInt(msg.body);
-      const pedidos = global.listaPedidos?.[userId]; // pega os pedidos salvos para esse usuário
-
-      if (!pedidos || isNaN(escolha) || escolha < 1 || escolha > pedidos.length) {
-          chat.sendMessage('Opção inválida. Digite o número do pedido desejado.');
-          return;
-      }
-
-      const pedido = pedidos[escolha - 1];
-  
-      // Mostra os detalhes do pedido escolhido
-      // Guarda o ID do pedido no estado global (caso queira usar depois)
-      global.pedidoSelecionado = pedido.NUMERO;
-
-      // Mostra o novo menu baseado no pedido
-      let menuEntrega = `📦 *Pedido ${pedido.NUMERO} selecionado.* O que deseja fazer?\n\n` +
-                      `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
-                      `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
-                      `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
-                      `4️⃣ - Voltar ao Início.`;
-
-       chat.sendMessage(menuEntrega);
-       userMenuState[userId] = 'acaoEntrega';  // novo estado que você pode tratar depois
-      }
-
-    else if (userState === 'acaoEntrega') {
-      switch (msg.body) {
-        case '1':
-        // Ajuste aqui: enviar link para a página scanner passando o pedido selecionado
-        //const linkScanner = `http://SEU-IP-OU-DOMINIO:3000/scanner.html?idPedido=${global.pedidoSelecionado}`;
-        //const ipLocal = '192.168.1.16'; // substitua pelo IP da sua máquina
-        //{global.pedidoSelecionado}
-        //const linkScanner = `https://zap-bot-avvante.vercel.app/`;
-        const userId = chat.id._serialized; // Pega o ID do chat atual
-        //const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}`;
-        const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}&userId=${userId}`; // <--- AQUI DEVE ESTAR!
-
-
-        await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
-        await chat.sendMessage(linkScanner);
-        break;
-
-        case '2':
-        chat.sendMessage('⌨️ Digite o código de barras manualmente:');
-        userMenuState[userId] = 'digitarCodigo';
-        break;
-
-        case '3':
-        chat.sendMessage('✅ Entrega total confirmada para o pedido ' + global.pedidoSelecionado);
-        userMenuState[userId] = 'cliente';
-        cliente.mostrarMenuCliente(chat);
-        break;
-
-        case '4':
+        atendimento.gravarMsgAtendimento(chat, body, userId, nruserId);
         userMenuState[userId] = 'main';
-        mostrarMenuPrincipal(chat);
-        break;
-
-        default:
-        chat.sendMessage('❌ Opção inválida. Escolha de 1 a 4.');
+        mostrarMenuPrincipal(chat); // Volta para o menu principal após o atendimento
     }
-}
+    else if (userState === 'escolherPedido') {
+        const escolha = parseInt(msg.body);
+        const pedidos = global.listaPedidos?.[userId]; // pega os pedidos salvos para esse usuário
 
-/*fim iury*/
- 
+        if (!pedidos || isNaN(escolha) || escolha < 1 || escolha > pedidos.length) {
+            chat.sendMessage('Opção inválida. Digite o número do pedido desejado.');
+            return;
+        }
+
+        const pedido = pedidos[escolha - 1];
+
+        // Guarda o ID do pedido no estado global (caso queira usar depois)
+        global.pedidoSelecionado = pedido.NUMERO;
+
+        // Mostra o novo menu baseado no pedido
+        let menuEntrega = `📦 *Pedido ${pedido.NUMERO} selecionado.* O que deseja fazer?\n\n` +
+                         `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
+                         `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
+                         `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
+                         `4️⃣ - Voltar ao Início.`;
+
+        chat.sendMessage(menuEntrega);
+        userMenuState[userId] = 'acaoEntrega';
+    }
+    else if (userState === 'acaoEntrega') {
+        switch (msg.body) {
+            case '1':
+                const userIdForLink = chat.id._serialized; // Pega o ID do chat atual
+                const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}&userId=${userIdForLink}`;
+
+                await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
+                await chat.sendMessage(linkScanner);
+                userMenuState[userIdForLink] = 'cliente'; // Retorna ao menu do cliente após enviar o link
+                cliente.mostrarMenuCliente(chat);
+                break;
+
+            case '2':
+                chat.sendMessage('⌨️ Digite o código de barras manualmente:');
+                userMenuState[userId] = 'digitarCodigo'; // Define o estado para esperar a entrada do código
+                break;
+
+            case '3':
+                chat.sendMessage('✅ Entrega total confirmada para o pedido ' + global.pedidoSelecionado);
+                userMenuState[userId] = 'cliente'; // Ou defina um estado para confirmar a entrega total
+                cliente.mostrarMenuCliente(chat);
+                break;
+
+            case '4':
+                userMenuState[userId] = 'main';
+                mostrarMenuPrincipal(chat);
+                break;
+
+            default:
+                chat.sendMessage('❌ Opção inválida. Escolha de 1 a 4.');
+                // Reexibir o menu de ações da entrega para o usuário
+                let menuEntrega = `📦 *Pedido ${global.pedidoSelecionado} selecionado.* O que deseja fazer?\n\n` +
+                                 `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
+                                 `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
+                                 `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
+                                 `4️⃣ - Voltar ao Início.`;
+                chat.sendMessage(menuEntrega);
+        }
+    }
+    // --- FIM DA LÓGICA PRINCIPAL ---
 });
 
-
-// Start your client
-//client.initialize();
-
-/*inicio iury*/
-//const scannerController = require('./Controller/scannerController'); 
-const scannerController = require('./Controller/scannerController');
-
+// Setup do Express para o backend (HTTP server)
 const app = express();
 const cors = require('cors');
 
 app.use(cors());
-
 app.use(express.json());
-app.use(express.static('public')); // Serve HTML e JS
+app.use(express.static('public')); // Serve HTML e JS (garanta que seu index.html está na pasta 'public')
 
+// Rota HTTP para validação de volume pelo scanner
 app.post('/validar-volume', scannerController.validarVolume);
 
-
 app.listen(3000, '0.0.0.0', () => {
-  console.log('Servidor rodando na porta 3000!');
+    console.log('Servidor Express rodando na porta 3000!');
 });
 
-
-/*fim iury */
-//console.log('Iniciando WhatsApp client...');
-// Start your client
+// Inicializa o cliente do WhatsApp
 client.initialize();
