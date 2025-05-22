@@ -3,10 +3,10 @@ const dbConfig = require('../ConfigDB');
 
 async function validarVolume(req, res) {
   const { idPedido, codigoBarras } = req.body;
-  //console.log('Requisição recebida com:', req.body);
+  console.log('🟢 Chegou na função validarVolume');
+    console.log('Body:', req.body);
 
-  //console.log('Resultado da consulta:', result.rows);
- 
+    
 
   try {
     const connection = await oracledb.getConnection(dbConfig);
@@ -14,9 +14,9 @@ async function validarVolume(req, res) {
       `select c.volc_plataforma 
          from volume_conferencia c 
         where c.volume_conferencia_id = :codigo`,
-      {codigo: idPedido }
+      {codigo: codigoBarras }
     );
-
+   
     await connection.close();
 
     if (result.rows[0][0] > 0) {
