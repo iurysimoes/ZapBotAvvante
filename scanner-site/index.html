@@ -194,7 +194,9 @@ finishButton.addEventListener('click', () => {
     displayMessage(`Escaneamento finalizado. Códigos lidos: ${codigosLidos.join(', ')}`, 'info');
   }
   // Tenta fechar a aba/navegador
-  window.close();
+  //window.close(); nao funciona quando navegador e aberto via link
+  // Redireciona para o WhatsApp
+  window.location.href = 'https://wa.me/556285119035';//colocar numero que vai abrir direto na conversa.
 });
 
 // Inicia o scanner quando a página é carregada
