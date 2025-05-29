@@ -145,7 +145,7 @@
             displayMessage('Código detectado: ' + result.text, 'info');
 
             try {
-              const res = await fetch('https://9dfb-177-30-111-194.ngrok-free.app/validar-volume', {
+              const res = await fetch('https://6761-177-30-111-194.ngrok-free.app/validar-volume', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idPedido, codigoBarras: result.text, userId: userId })
