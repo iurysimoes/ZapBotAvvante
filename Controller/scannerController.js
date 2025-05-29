@@ -23,7 +23,7 @@ async function performVolumeValidation(codigoBarras, idPedido = null) {
       };
     }
     const pedido_saida_id = pedidoResult.rows[0][0];
-
+    console.log(pedido_saida_id);
     const result = await connection.execute(
       `select c.volc_plataforma
          from volume_conferencia c

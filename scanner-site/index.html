@@ -139,8 +139,11 @@
           if (!scanning) return; // Se a flag de scanning for false, para de processar
 
           if (result) {
-            codeReader.reset(); // Para o scanner temporariamente para processar o código
-            scanning = false; // Desativa o scanning enquanto processa
+            //codeReader.reset(); // Para o scanner temporariamente para processar o código
+            //scanning = false; // Desativa o scanning enquanto processa
+            codeReader.stopContinuousDecode(); // para o scanner sem fechar a câmera
+            scanning = false;
+            
             loadingIndicator.style.display = 'block';
             displayMessage('Código detectado: ' + result.text, 'info');
 

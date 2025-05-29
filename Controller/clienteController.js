@@ -44,7 +44,8 @@ const mostrarCliPedido = async (chat, userId) => {
              WHERE PA.PARCEIRO_ID = PS.PARCEIRO_ID
                AND PA.PRCR_CGC_CPF <> :CPF_CNPJ
                AND PS.PDSD_STATUS IN ('Reservado','Faturado')
-               AND PS.PDSD_DT_EMISSAO >= (SYSDATE-30)
+               /*AND PS.PDSD_DT_EMISSAO >= (SYSDATE-30)*/
+               and ps.pdsd_nr_pedido = '59267'
                `,
             [global.CpfCnpj],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
