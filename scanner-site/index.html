@@ -113,49 +113,37 @@
 
     // Iniciar o scanner
     async function startScanner() {
-      scanning = true;
-      displayMessage('Aguardando código de barras...', 'info');
-      loadingIndicator.style.display = 'none';
-      finishButton.style.display = 'none'; // Oculta o botão de finalizar
-      mensagemElement.classList.remove('success', 'error'); // Limpa status de sucesso/erro anterior
+  scanning = true;
+  displayMessage('Aguardando código de barras...', 'info');
+  loadingIndicator.style.display = 'none';
+  finishButton.style.display = 'none';
 
-      try {
-        const videoInputDevices = await codeReader.getVideoInputDevices();
-        const backCameras = videoInputDevices.filter(device =>
-          device.label.toLowerCase().includes('back') ||
-          device.label.toLowerCase().includes('trás')
-        );
+  try {
+    const videoInputDevices = await codeReader.getVideoInputDevices();
+    const backCameras = videoInputDevices.filter(device =>
+      device.label.toLowerCase().includes('back') ||
+      device.label.toLowerCase().includes('trás')
+    );
 
-        const selectedCamera = backCameras.length > 0
-          ? backCameras[backCameras.length - 1]
-          : videoInputDevices[0]; // fallback para a primeira disponível
+    const selectedCamera = backCameras.length > 0
+      ? backCameras[backCameras.length - 1]
+      : videoInputDevices[0];
 
-        if (!selectedCamera) {
-          displayMessage('Nenhuma câmera encontrada.', 'error');
-          return;
-        }
-
-       loopScanner(selectedCamera.deviceId);
- 
-      } catch (error) {
-        console.error('Erro ao iniciar a câmera:', error);
-        displayMessage('Não foi possível iniciar a câmera. Verifique as permissões.', 'error');
-        loadingIndicator.style.display = 'none';
-      }
+    if (!selectedCamera) {
+      displayMessage('Nenhuma câmera encontrada.', 'error');
+      return;
     }
-    
-    async function loopScanner(deviceId) {
+
+    codeReader.decodeFromVideoDevice(selectedCamera.deviceId, 'video', async (result, err) => {
       if (!scanning) return;
 
-      try {
-        const result = await codeReader.decodeOnceFromVideoDevice(deviceId, 'video');
-        if (!scanning) return;
-
+      if (result) {
         loadingIndicator.style.display = 'block';
         displayMessage('Código detectado: ' + result.text, 'info');
 
+        // Aqui você envia o código para backend
         try {
-          const res = await fetch('https://cbc3-177-30-111-194.ngrok-free.app/validar-volume', {
+          const res = await fetch('URL_DO_SEU_BACKEND', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idPedido, codigoBarras: result.text, userId: userId })
@@ -164,30 +152,29 @@
 
           displayMessage(data.mensagem, data.sucesso ? 'success' : 'error');
 
-          if (data.sucesso && data.maisVolumes) {
-            setTimeout(() => loopScanner(deviceId), 1500);
-          } else if (data.sucesso && !data.maisVolumes) {
+          if (!data.maisVolumes) {
             finishButton.style.display = 'block';
-          } else {
-            setTimeout(() => loopScanner(deviceId), 2000);
+            codeReader.reset();
+            scanning = false;
           }
 
-        } catch (error) {
+        } catch (fetchError) {
           displayMessage('Erro ao comunicar com o servidor.', 'error');
-          setTimeout(() => loopScanner(deviceId), 2000);
         } finally {
           loadingIndicator.style.display = 'none';
         }
-
-      } catch (err) {
-        if (err instanceof ZXing.NotFoundException) {
-          loopScanner(deviceId);
-        } else {
-          displayMessage('Erro ao ler código: ' + err, 'error');
-          setTimeout(() => loopScanner(deviceId), 2000);
-        }
       }
-    }
+
+      if (err && !(err instanceof ZXing.NotFoundException)) {
+        displayMessage('Erro na leitura: ' + err, 'error');
+      }
+    });
+
+  } catch (error) {
+    displayMessage('Erro ao iniciar a câmera.', 'error');
+  }
+}
+
     
     // Event listener para o botão de finalizar
     finishButton.addEventListener('click', () => {
