@@ -154,9 +154,13 @@
               displayMessage(data.mensagem, data.sucesso ? 'success' : 'error');
 
               if (data.sucesso && data.maisVolumes) {
+                //setTimeout(() => {
+                //  scanning = true;
+                //  displayMessage('Aguardando próximo código...', 'info');
+                //}, 1500);
                 setTimeout(() => {
-                  scanning = true;
-                  displayMessage('Aguardando próximo código...', 'info');
+                  codeReader.reset();
+                  startScanner(); // reinicia a leitura com a câmera já aberta
                 }, 1500);
               } else if (data.sucesso && !data.maisVolumes) {
                 finishButton.style.display = 'block';
