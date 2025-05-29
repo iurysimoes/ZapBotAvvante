@@ -1,7 +1,7 @@
 const oracledb = require('oracledb');
 const dbConfig = require('../ConfigDB');
 // const mainBot = require('../index'); // Mantenha esta linha se estiver usando-a no 'validarVolume' original.
-console.log('entrou scannerController');
+
 // NOVA FUNÇÃO: Lógica de validação do banco de dados, retorna um objeto
 async function performVolumeValidation(codigoBarras, idPedido = null) {
   let connection;

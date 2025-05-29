@@ -253,40 +253,28 @@ client.on('message', async msg => {
     }
     else if (userState === 'acaoEntrega') {
         switch (msg.body) {
-            case '1': // Opção para ir para o scanner (frontend)
-                const userIdForLink = chat.id._serialized;
+            case '1':
+                const userIdForLink = chat.id._serialized; // Pega o ID do chat atual
                 const linkScanner = `https://zap-bot-avvante.vercel.app/?idPedido=${global.pedidoSelecionado}&userId=${userIdForLink}`;
 
                 await chat.sendMessage('🔍 Abra o link abaixo para escanear o código de barras do volume:');
                 await chat.sendMessage(linkScanner);
-
-                // ATENÇÃO: Removi a chamada imediata ao cliente.mostrarMenuCliente(chat) e
-                // o reset de userMenuState para 'cliente' aqui.
-                // O bot não deve responder imediatamente após enviar o link.
-                // Ele só notificará o usuário quando a conferência *completa* for finalizada via scannerController.
-                userMenuState[userIdForLink] = 'acaoEntrega'; // Mantém no estado de ações do pedido
-
-                // Se desejar um prompt silencioso para o usuário no chat, pode ser:
-                // chat.sendMessage('Aguardando escaneamento dos volumes...');
+                userMenuState[userIdForLink] = 'cliente'; // Retorna ao menu do cliente após enviar o link
+                cliente.mostrarMenuCliente(chat);
                 break;
 
-            case '2': // Opção para digitar código de barras
+            case '2':
                 chat.sendMessage('⌨️ Digite o código de barras manualmente:');
                 userMenuState[userId] = 'digitarCodigo'; // Define o estado para esperar a entrada do código
                 break;
 
-            case '3': // Confirmar Entrega Total
-                // Implementar a lógica de confirmação de entrega total aqui
-                // (pode fazer um UPDATE em todos os volumes pendentes para 'S')
-                chat.sendMessage('✅ Confirmando entrega total...');
-                // Exemplo de como você poderia chamar uma função para isso:
-                // await scannerController.confirmarEntregaTotal(global.pedidoSelecionado, userId);
+            case '3':
                 chat.sendMessage('✅ Entrega total confirmada para o pedido ' + global.pedidoSelecionado);
-                userMenuState[userId] = 'cliente'; // Ou para o menu principal
+                userMenuState[userId] = 'cliente'; // Ou defina um estado para confirmar a entrega total
                 cliente.mostrarMenuCliente(chat);
                 break;
 
-            case '4': // Voltar ao Início
+            case '4':
                 userMenuState[userId] = 'main';
                 mostrarMenuPrincipal(chat);
                 break;
@@ -314,9 +302,7 @@ app.use(express.json());
 app.use(express.static('public')); // Serve HTML e JS (garanta que seu index.html está na pasta 'public')
 
 // Rota HTTP para validação de volume pelo scanner
-console.log('Entrou index.jss');
 app.post('/validar-volume', scannerController.validarVolume);
-console.log('passou pela chamada scannerController');
 
 app.listen(3000, '0.0.0.0', () => {
     console.log('Servidor Express rodando na porta 3000!');

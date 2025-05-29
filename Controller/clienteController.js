@@ -37,13 +37,14 @@ const mostrarCliPedido = async (chat, userId) => {
                     (SELECT AP.ANPD_ANDAMENTO 
                        FROM ANDAMENTO_PEDIDO AP 
                       WHERE AP.ANDAMENTO_PEDIDO_ID = fnc_ret_ult_andamento(PS.PEDIDO_SAIDA_ID) 
-                        AND ROWNUM <= 1) ULT_ANDAMENTO
+                        AND ROWNUM <= 1) ULT_ANDAMENTO,
+                    PS.PEDIDO_SAIDA_ID   PEDIDO_SAIDA_ID    
              FROM PEDIDO_SAIDA PS,
                   PARCEIRO PA
              WHERE PA.PARCEIRO_ID = PS.PARCEIRO_ID
                AND PA.PRCR_CGC_CPF <> :CPF_CNPJ
                AND PS.PDSD_STATUS IN ('Reservado','Faturado')
-               AND PS.PDSD_DT_EMISSAO >= (SYSDATE-20)
+               AND PS.PDSD_DT_EMISSAO >= (SYSDATE-30)
                `,
             [global.CpfCnpj],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
