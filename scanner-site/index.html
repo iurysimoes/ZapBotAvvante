@@ -193,6 +193,8 @@ finishButton.addEventListener('click', () => {
   if (codigosLidos.length > 0) {
     displayMessage(`Escaneamento finalizado. Códigos lidos: ${codigosLidos.join(', ')}`, 'info');
   }
+  // Tenta fechar a aba/navegador
+  window.close();
 });
 
 // Inicia o scanner quando a página é carregada
