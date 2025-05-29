@@ -143,7 +143,7 @@
 
         // Aqui você envia o código para backend
         try {
-          const res = await fetch('URL_DO_SEU_BACKEND', {
+          const res = await fetch('https://cbc3-177-30-111-194.ngrok-free.app/validar-volume', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idPedido, codigoBarras: result.text, userId: userId })
