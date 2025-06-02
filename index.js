@@ -130,7 +130,7 @@ client.on('message', async msg => {
                          `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
                          `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
                          `4️⃣ - Voltar ao Início.`;
-        chat.sendMessage(menuEntrega);
+        //chat.sendMessage(menuEntrega);
 
     }
     // 2. SEGUNDO: Se o usuário NÃO está em um estado de espera de entrada, então ele está navegando pelos menus.
