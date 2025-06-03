@@ -78,7 +78,7 @@ async function performVolumeValidation(codigoBarras, idPedido = null) {
       //  volcPlataforma: volc_plataforma_valor
       //};
     } else {
-      mensagemBot = '❌ Código inválido ou não corresponde ao pedido.';
+      mensagemBot = '❌ Código inválido ou não corresponde ao pedido, Tente novamente ou Digite Menu.';
       return {
         sucesso: false,
         mensagem: mensagemBot,
@@ -104,6 +104,59 @@ async function performVolumeValidation(codigoBarras, idPedido = null) {
   }
 }
 
+async function confirmarTodosVolumes(idPedido) {
+  let connection;
+  try {
+    connection = await oracledb.getConnection(dbConfig);
+
+    // 1. Buscar o ID do pedido_saida
+    const pedidoResult = await connection.execute(
+      `SELECT pedido_saida_id 
+         FROM pedido_saida 
+        WHERE Pdsd_Nr_Pedido = :idPedido`,
+      { idPedido }
+    );
+
+    if (!pedidoResult.rows || pedidoResult.rows.length === 0) {
+      return {
+        sucesso: false,
+        mensagem: '❌ Pedido não encontrado.',
+      };
+    }
+
+    const pedido_saida_id = pedidoResult.rows[0][0];
+
+    // 2. Atualizar todos os volumes do pedido
+    const result = await connection.execute(
+      `UPDATE volume_conferencia
+          SET volc_confirma_cliente_zap = 'Sim'
+        WHERE pedido_saida_id = :pedido_saida_id`,
+      { pedido_saida_id },
+      { autoCommit: true }
+    );
+
+    return {
+      sucesso: true,
+      mensagem: `✅ Todos os volumes do pedido ${idPedido} foram confirmados com sucesso.`,
+      linhasAtualizadas: result.rowsAffected
+    };
+
+  } catch (err) {
+    console.error("Erro ao confirmar todos os volumes:", err);
+    return {
+      sucesso: false,
+      mensagem: '❌ Ocorreu um erro ao confirmar todos os volumes Tente novamente ou Digite Menu!',
+    };
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Erro ao fechar conexão:', err);
+      }
+    }
+  }
+}
 
 // FUNÇÃO EXISTENTE: Valida Volume (usada pela rota HTTP)
 // A função original 'validarVolume' precisa da linha abaixo se você quer
@@ -143,4 +196,4 @@ async function validarVolume(req, res) {
 }
 
 // Exporta AMBAS as funções: a que responde HTTP e a nova core
-module.exports = { validarVolume, performVolumeValidation };
+module.exports = { validarVolume, performVolumeValidation,confirmarTodosVolumes };

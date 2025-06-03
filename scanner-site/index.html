@@ -141,10 +141,10 @@ async function startScanner() {
       if (result) {
         const codigo = result.text;
         // Evitar processar o mesmo código repetidamente
-        if (codigosLidos.includes(codigo)) {
-          displayMessage(`Código ${codigo} já foi escaneado.`, 'info');
-          return;
-        }
+        //if (codigosLidos.includes(codigo)) {
+        //  displayMessage(`Código ${codigo} já foi escaneado.`, 'info');
+        //  return;
+       // }
 
         loadingIndicator.style.display = 'block';
         displayMessage('Código detectado: ' + codigo, 'info');

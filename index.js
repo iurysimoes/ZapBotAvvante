@@ -123,7 +123,8 @@ client.on('message', async msg => {
         await chat.sendMessage(validationResult.mensagem);
 
         // Resetar o estado do usuário para o menu 'acaoEntrega' ou 'main' após processar
-        userMenuState[userId] = 'acaoEntrega'; // Volta para o menu de ações do pedido
+        //userMenuState[userId] = 'acaoEntrega'; // Volta para o menu de ações do pedido
+        userMenuState[userId] = 'digitarCodigo'; //mantem no menu de digitar codigo de barras
         // Reexibir o menu de ações da entrega para o usuário
         let menuEntrega = `📦 *Pedido ${idPedidoAtual} selecionado.* O que deseja fazer?\n\n` +
                          `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
@@ -278,12 +279,15 @@ client.on('message', async msg => {
             case '3': // Confirmar Entrega Total
                 // Implementar a lógica de confirmação de entrega total aqui
                 // (pode fazer um UPDATE em todos os volumes pendentes para 'S')
-                chat.sendMessage('✅ Confirmando entrega total...');
+                //chat.sendMessage('✅ Confirmando entrega total...');
                 // Exemplo de como você poderia chamar uma função para isso:
-                // await scannerController.confirmarEntregaTotal(global.pedidoSelecionado, userId);
-                chat.sendMessage('✅ Entrega total confirmada para o pedido ' + global.pedidoSelecionado);
+                 await scannerController.confirmarTodosVolumes(global.pedidoSelecionado);
+                
+                //chat.sendMessage('✅ Entrega total confirmada para o pedido ' + global.pedidoSelecionado + \nDigite *Menu* para voltar ao início`);
+                chat.sendMessage(`✅ Entrega total confirmada para o pedido ${global.pedidoSelecionado}\nDigite *Menu* para voltar ao início`);
+    
                 userMenuState[userId] = 'cliente'; // Ou para o menu principal
-                cliente.mostrarMenuCliente(chat);
+                //cliente.mostrarMenuCliente(chat);
                 break;
 
             case '4': // Voltar ao Início
