@@ -179,6 +179,17 @@ async function validarVolume(req, res) {
   // Envia a resposta HTTP para o frontend (a tela do scanner)
   res.json(validationResult);
 
+  // Envia mensagem automática se todos volumes já foram validados
+if (validationResult.finalizado && userId && mainBot.whatsappClient) {
+    try {
+      await mainBot.whatsappClient.sendMessage(userId, validationResult.mensagem);
+      //await mainBot.enviarMenuCliente(userId); // <<-- aqui você chama o menu padrão do bot
+    } catch (error) {
+      console.error('Erro ao enviar mensagens automáticas pelo bot:', error);
+    }
+  }
+}
+
   // Opcional: Se você ainda quer que o bot responda quando o scanner é usado
   // (além da resposta na tela do scanner), mantenha este bloco.
   // Caso contrário, pode remover se a resposta do bot for exclusiva para a digitação manual.
@@ -193,7 +204,7 @@ async function validarVolume(req, res) {
   //} else {
   //    console.warn('⚠️ Não foi possível enviar mensagem pelo bot (HTTP handler): userId ou whatsappClient não disponível.');
  // }
-}
+
 
 // Exporta AMBAS as funções: a que responde HTTP e a nova core
 module.exports = { validarVolume, performVolumeValidation,confirmarTodosVolumes };
