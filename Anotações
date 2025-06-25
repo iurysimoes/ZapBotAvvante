@@ -1,0 +1,15 @@
+🤖 Empresa grande + whatsapp-web.js + uso como chatbot (somente resposta)
+👉 Risco de banimento do numero whasapp ? SIM. Mas depende muito de como é usado.
+
+📊 Avaliando o cenário:
+Se for apenas um chatbot reativo(ou seja, só responde quando o cliente manda mensagem, 
+não sai mandando msg por conta própria), o risco cai bastante, mas ainda existe por alguns motivos:
+
+Fator Impacto no risco
+Só responde mensagens recebidas                              	✅ Reduz muito o risco
+Não envia mensagens proativas nem em massa	                    ✅ Muito bom
+Usa apenas uma sessão ativa e estável (sem ficar reconectando)	✅ Segurança maior
+Tem delays realistas nas respostas (2s, 3s, 5s…)	            ✅ Evita detecção
+Responde com links, PDFs ou mensagens “padrão” de marketing	    ⚠️ Pode levantar suspeita
+Está online 24/7 como bot	                                    ⚠️ Pode parecer comportamento automatizado demais
+Usa navegador headless / sem interface gráfica	                ⚠️ Detecção técnica possível
