@@ -1,3 +1,37 @@
+* Falta fazer / ajuste *
+1-Após usuario digitar todos cod de barra e aparecer a mensagem tdos volumes lidos,opção de voltar ao menu
+  principal ou finalizar conversa.
+
+2-Quando o suario finalizar todos volumes sem ler, voltar ao menu principal ou finalizar a conversa.
+
+3-Front-end que é o leitor scanner, esta hospedado no vercel.
+
+4-Trata para o bot responder somente usando palavra chave como menu ou qualquer interação?
+
+5-Back-end roda utilizando o ngrok http 300.o ngrok vai disponibilizar um caminho e tem que colocar o caminho  
+  gerado pelo nrgok temporariamente no index.html e subir a versão para o git, para o vercel atualizar.
+
+6-Ver como funciona para não utilizar o ngrok mais, usando endereço ou porta aberta aqui pela avvante.
+-----------------------------------------------------------------------------------------------------------  
+-----------------------------------------------------------------------------------------------------------
+*COMANDO PARA INICIAR BOT*
+1- Em um terminal, digite ngrok http 3000 - vai disponibiliza um link, exemplo 
+   (https://c231-177-30-111-194.ngrok-free.app) ai tem que por esse caminho no index.html
+   na [validar-volume]
+
+2-Em outro terminal digite [node index.js] vai iniciar o bot whatsapp, aguardar aparecer a mensagem conectado.
+
+3-Esta atualmente fixo para o bot logado responder somente 1 numero de whatsapp que esta fixo no index.js.
+
+4-Ao iniciar o bot e ver que não esta aparecendo a mensagem de conectado com sucesso, apagues as 2 pastas.
+  .wwebjs_autu
+  .wwebjs_cache
+  e depois rode [node index.js] novamente para iniciar o bot e ler o qrcode novamente.
+
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+*CURIOSIDADE/INFORMAÇÃO*
+
 🤖 Empresa grande + whatsapp-web.js + uso como chatbot (somente resposta)
 👉 Risco de banimento do numero whasapp ? SIM. Mas depende muito de como é usado.
 
