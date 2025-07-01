@@ -67,7 +67,7 @@ async function performVolumeValidation(codigoBarras, idPedido = null) {
 
       return {
         sucesso: true,
-        mensagem: `✅ Volume ${codigoBarras} validado com sucesso! Ainda restam ${totalPendentes} para escanear.`,
+        mensagem: `✅ Volume ${codigoBarras} validado com sucesso! Ainda restam ${totalPendentes} para escanear, Digite o proximo.`,
         finalizado: false
       };
 
