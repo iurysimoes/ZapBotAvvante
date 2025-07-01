@@ -1,19 +1,28 @@
 * Falta fazer / ajuste *
-1-Após usuario digitar todos cod de barra e aparecer a mensagem tdos volumes lidos,opção de voltar ao menu
+1-Após usuario digitar todos cod de barra e aparecer a mensagem tdos volumes lidos,mandar opção de voltar ao menu
   principal ou finalizar conversa.
 
-2-Quando o suario finalizar todos volumes sem ler, voltar ao menu principal ou finalizar a conversa.
+2-Quando o suario finalizar todos volumes sem ler, mandar opção voltar ao menu principal ou finalizar a conversa.
 
 3-Front-end que é o leitor scanner, esta hospedado no vercel.
 
-4-Trata para o bot responder somente usando palavra chave como menu ou qualquer interação?
+4-Tratar para o bot responder somente usando palavra chave como menu ou qualquer interação?
 
-5-Back-end roda utilizando o ngrok http 300.o ngrok vai disponibilizar um caminho e tem que colocar o caminho  
-  gerado pelo nrgok temporariamente no index.html e subir a versão para o git, para o vercel atualizar.
+5-Back-end roda utilizando o ngrok http 3000. O ngrok vai disponibilizar um caminho e tem que colocar o caminho  
+  gerado pelo ngrok temporariamente no index.html e subir a versão para o git, para o vercel atualizar.
+[ ngrok é exatamente: um túnel que permite que pessoas (ou serviços) fora da rede local acessem o back-end
+  (ou qualquer outro servidor) que está rodando no seu computador.]
 
-6-Ver como funciona para não utilizar o ngrok mais, usando endereço ou porta aberta aqui pela avvante.
------------------------------------------------------------------------------------------------------------  
+6-Ver como funciona para não utilizar o ngrok mais, usando endereço ou porta aberta aqui pela avvante?.
+
+7-No controler cliente onde passa parametro cnpj/cpf no sql tem que mudar a clausula <> cnpj pois coloquei para teste.
+  no controle tira do sql tbm o pedido_Saida_id que ta fixo.
+	*conferir todos os sql de consultas tem dados fisico
+
+  -----------------------------------------------------------------------------------------------------------  
 -----------------------------------------------------------------------------------------------------------
+
+
 *COMANDO PARA INICIAR BOT*
 1- Em um terminal, digite ngrok http 3000 - vai disponibiliza um link, exemplo 
    (https://c231-177-30-111-194.ngrok-free.app) ai tem que por esse caminho no index.html
@@ -28,7 +37,7 @@
   .wwebjs_cache
   e depois rode [node index.js] novamente para iniciar o bot e ler o qrcode novamente.
 
------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 *CURIOSIDADE/INFORMAÇÃO*
 
