@@ -2,6 +2,26 @@ const oracledb = require('oracledb');
 const dbConfig = require('../ConfigDB');
 // const mainBot = require('../index'); // Mantenha esta linha se estiver usando-a no 'validarVolume' original.
 console.log('entrou scannerController');
+
+// Função para mostrar o menu de produtos
+const mostrarMenuCliente = (chat) => {
+    
+    const submenu = `
+ *MENU DE CLIENTE*
+ 1️⃣ - Pedidos
+ 2️⃣ - Financeiro
+ 3️⃣ - Enviar mensagem para Atendimento
+ 4️⃣ - Voltar ao menu principal
+ 
+ Escolha a categoria desejada.
+     `;
+     chat.sendMessage(submenu);
+  
+ };
+
+ const pedidosFinalizados = new Set(); // armazena IDs de pedidos finalizados
+
+
 // NOVA FUNÇÃO: Lógica de validação do banco de dados, retorna um objeto
 async function performVolumeValidation(codigoBarras, idPedido = null) {
   let connection;
@@ -60,9 +80,10 @@ async function performVolumeValidation(codigoBarras, idPedido = null) {
       if (totalPendentes === 0) {
         return {
           sucesso: true,
-          mensagem: '✅ Todos os volumes desse pedido já foram validados!',
+          mensagem: '✅ Todos os volumes desse pedido já foram validados!\n Digite 4 Para voltar ao Menu principal.',
           finalizado: true
         };                                          
+       //mostrarMenuCliente(chat); 
       }
 
       return {
@@ -180,14 +201,26 @@ async function validarVolume(req, res) {
   res.json(validationResult);
 
   // Envia mensagem automática se todos volumes já foram validados
-if (validationResult.finalizado && userId && mainBot.whatsappClient) {
-    try {
-      await mainBot.whatsappClient.sendMessage(userId, validationResult.mensagem);
-      //await mainBot.enviarMenuCliente(userId); // <<-- aqui você chama o menu padrão do bot
-    } catch (error) {
-      console.error('Erro ao enviar mensagens automáticas pelo bot:', error);
+//if (validationResult.finalizado && userId && mainBot.whatsappClient) {
+//    try {
+//      await mainBot.whatsappClient.sendMessage(userId, validationResult.mensagem);
+//      //await mainBot.enviarMenuCliente(userId); // <<-- aqui você chama o menu padrão do bot
+//    } catch (error) {
+//      console.error('Erro ao enviar mensagens automáticas pelo bot:', error);
+    //}
+  //}
+  if (validationResult.finalizado && userId && mainBot.whatsappClient) {
+    if (!pedidosFinalizados.has(idPedido)) {
+      try {
+        await mainBot.whatsappClient.sendMessage(userId, validationResult.mensagem);
+        pedidosFinalizados.add(idPedido); // marca como já enviado
+      } catch (error) {
+        console.error('Erro ao enviar mensagens automáticas pelo bot:', error);
+      }
+    } else {
+      console.log(`⚠️ Pedido ${idPedido} já foi finalizado anteriormente. Mensagem não reenviada.`);
     }
-  }
+    }
 }
 
   // Opcional: Se você ainda quer que o bot responda quando o scanner é usado

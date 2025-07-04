@@ -20,6 +20,7 @@ const mostrarMenuCliente = (chat) => {
      chat.sendMessage(submenu);
   
  };
+ 
 /*inicio iury*/
 const mostrarCliPedido = async (chat, userId) => {
     let connection;
@@ -245,12 +246,13 @@ const mostrarCliFinanceiro = (chat) => {
                       trim(TO_CHAR(TI.TITL_VALOR,'99999999990D99')) VALOR
                 from TITULO   TI,
                     PARCEIRO PA
-                where PA.PRCR_CGC_CPF     = :CPF_CNPJ
-                  and TI.PARCEIRO_ID      = PA.PARCEIRO_ID
+                where  TI.PARCEIRO_ID      = PA.PARCEIRO_ID
                   and not TI.TITL_POSICAO in ('Quitado','Cancelado')
+                  AND TI.TITL_DT_VENCTO >= TO_DATE('01/01/2025', 'DD/MM/YYYY')
+                  and ROWNUM <= 2
               order by NUMERO,PARCELA
               `,             
-            [CpfCnpj],
+            [],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
           );
 
@@ -258,7 +260,7 @@ const mostrarCliFinanceiro = (chat) => {
          if (!result || result.rows.length === 0) {
            chat.sendMessage('Não localizado titulos abertos para este Cliente!');
            funcoes.sleep(1000);
-           mostrarMenuCliente(chat);        
+           //mostrarMenuCliente(chat);        
            return;
           }     
     
