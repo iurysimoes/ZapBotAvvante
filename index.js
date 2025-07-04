@@ -91,9 +91,9 @@ client.on('message', async msg => {
     const nruserId = msg.from.split('@')[0]; // Remove a parte do domínio
 
     // FILTRO DE USUÁRIO (APENAS PARA TESTE, RETIRAR EM PRODUÇÃO)
-    if (userId !== '556284315872@c.us') { // Mantenha ou remova conforme sua necessidade de teste
-        return;
-    }
+    //if (userId !== '556284315872@c.us') { // Mantenha ou remova conforme sua necessidade de teste
+     //   return;
+   // }
 
     // Se o usuário ainda não tem um estado de menu, define o estado inicial como o menu principal
     if (!userMenuState[userId]) {
