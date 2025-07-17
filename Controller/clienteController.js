@@ -302,11 +302,55 @@ const mostrarCliFinanceiro = (chat) => {
       conex(); 
 
 };
+const mostrarStatusPedido = async (chat, userId) => {
+    let connection;
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        let result = await connection.execute(
+            `
+            select  ANP.ANPD_ANDAMENTO,
+                    PS.PDSD_NR_PEDIDO
+              from PEDIDO_SAIDA PS, ANDAMENTO_PEDIDO ANP
+             where PS.PEDIDO_SAIDA_ID = ANP.PEDIDO_SAIDA_ID
+               and PS.PDSD_NR_PEDIDO  = :PEDIDO
+               AND ANP.ANPD_DATA = (
+                                     SELECT MAX(ANP2.ANPD_DATA)
+                                       FROM ANDAMENTO_PEDIDO ANP2
+                                      WHERE ANP2.PEDIDO_SAIDA_ID = PS.PEDIDO_SAIDA_ID)
+               `,
+            [global.pedido],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+        );
+
+        if (result.rows.length > 0) {
+         const { ANPD_ANDAMENTO, PDSD_NR_PEDIDO } = result.rows[0];
+        };
+
+        let mensagem = `Status do pedido ${PDSD_NR_PEDIDO}:\nAndamento: ${ANPD_ANDAMENTO}`;
+
+        chat.sendMessage(mensagem);
+
+    } catch (error) {
+        console.error(error);
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    }
+};
+
 
  // Exportando 
  module.exports = {
     mostrarMenuCliente,
     mostrarCliPedido,
     mostrarCliFinanceiro,
-    obterPedidosEmAberto
+    obterPedidosEmAberto,
+    mostrarStatusPedido
 };

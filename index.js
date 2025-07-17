@@ -139,6 +139,9 @@ client.on('message', async msg => {
         if (msg.body.toLowerCase() === 'menu') {
             mostrarMenuPrincipal(chat);
         }
+        else if(msg.body.toLowerCase() === 'Pedidos') {
+            userMenuState[userId] = 'clienteCPF';
+        }
         else if (msg.body === '1') {
             chat.sendMessage('Cliente. Digite o CPF/CNPJ:');
             userMenuState[userId] = 'clienteCPF';
@@ -172,8 +175,10 @@ client.on('message', async msg => {
         } else {
             if (global.CpfCnpj.length === 11) {
                 if (funcoes.validarCPF(global.CpfCnpj)) {
-                    userMenuState[userId] = 'cliente';
-                    cliente.mostrarMenuCliente(chat);
+                    //userMenuState[userId] = 'cliente';
+                    userMenuState[userId] = 'escolherPedido';
+                    //cliente.mostrarMenuCliente(chat);
+                    cliente.mostrarCliPedido(chat);
                     vCount = 0; // Resetar contador
                 } else {
                     chat.sendMessage(`CPF. Digitado inválido.`);
@@ -184,8 +189,10 @@ client.on('message', async msg => {
             }
             if (global.CpfCnpj.length === 14) {
                 if (funcoes.validarCNPJ(global.CpfCnpj)) {
-                    userMenuState[userId] = 'cliente';
-                    cliente.mostrarMenuCliente(chat);
+                    //userMenuState[userId] = 'cliente';
+                    userMenuState[userId] = 'escolherPedido';
+                    //cliente.mostrarMenuCliente(chat);
+                    cliente.mostrarCliPedido(chat);
                     vCount = 0; // Resetar contador
                 } else {
                     chat.sendMessage(`CNPJ. Digitado inválido.`);
@@ -229,28 +236,32 @@ client.on('message', async msg => {
         mostrarMenuPrincipal(chat); // Volta para o menu principal após o atendimento
     }
     else if (userState === 'escolherPedido') {
-        const escolha = parseInt(msg.body);
-        const pedidos = global.listaPedidos?.[userId]; // pega os pedidos salvos para esse usuário
 
-        if (!pedidos || isNaN(escolha) || escolha < 1 || escolha > pedidos.length) {
-            chat.sendMessage('Opção inválida. Digite o número do pedido desejado.');
-            return;
-        }
+        cliente.mostrarStatusPedido(chat);
+        //const escolha = parseInt(msg.body);
+        //const pedidos = global.listaPedidos?.[userId]; // pega os pedidos salvos para esse usuário
 
-        const pedido = pedidos[escolha - 1];
+        //if (!pedidos || isNaN(escolha) || escolha < 1 || escolha > pedidos.length) {
+        //    chat.sendMessage('Opção inválida. Digite o número do pedido desejado.');
+        //    return;
+
+        //}
+
+        //const pedido = pedidos[escolha - 1];
 
         // Guarda o ID do pedido no estado global (caso queira usar depois)
-        global.pedidoSelecionado = pedido.NUMERO;
+        //global.pedidoSelecionado = pedido.NUMERO;
 
         // Mostra o novo menu baseado no pedido
-        let menuEntrega = `📦 *Pedido ${pedido.NUMERO} selecionado.* O que deseja fazer?\n\n` +
-                         `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
-                         `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
-                         `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
-                         `4️⃣ - Voltar ao Início.`;
+        //let menuEntrega = `📦 *Pedido ${pedido.NUMERO} selecionado.* O que deseja fazer?\n\n` +
+        //                 `1️⃣ - Ler código de barras dos Volumes Recebidos?\n` +
+        //                 `2️⃣ - Digitar código de barras dos Volumes Recebidos?\n` +
+        //                 `3️⃣ - Confirmar Entrega Total dos Volumes Sem ler volumes?\n` +
+        //                 `4️⃣ - Voltar ao Início.`;
 
-        chat.sendMessage(menuEntrega);
-        userMenuState[userId] = 'acaoEntrega';
+        //chat.sendMessage(menuEntrega);
+        //userMenuState[userId] = 'acaoEntrega';
+        //cliente.mostrarCliFinanceiro(chat);
     }
     else if (userState === 'acaoEntrega') {
         switch (msg.body) {
